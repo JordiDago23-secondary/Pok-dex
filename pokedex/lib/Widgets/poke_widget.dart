@@ -12,6 +12,7 @@ class PokeWidget extends StatelessWidget{
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(5),
+          border: Border.all(width: 1)
 
         ),
         margin:EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -27,3 +28,4 @@ class PokeWidget extends StatelessWidget{
   }
 
 }
+

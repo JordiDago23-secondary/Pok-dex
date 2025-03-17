@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex/Controller/pokemon_api.dart';
 import 'package:pokedex/Model/pokemon_model.dart';
-import 'package:pokedex/Page/poke_widget.dart';
-
+import 'package:pokedex/Widgets/poke_widget.dart';
+import 'package:pokedex/Widgets/poke_card.dart';
+import 'package:pokedex/Widgets/poke_card2.dart';
 
 class InitialPage extends StatefulWidget{
 
-
   State<InitialPage> createState() => _InitialPageState();
 }
-
 
 
 class _InitialPageState extends State<InitialPage>{
@@ -20,7 +19,8 @@ class _InitialPageState extends State<InitialPage>{
   List<PokeModel> _foundPokemons = [];
 
   int numOffSet = 0;
-  int numPokn = 200;
+  int numPokn = 1500;
+  bool isFavorite = true;
 
   void initState(){
     super.initState();
@@ -107,13 +107,22 @@ class _InitialPageState extends State<InitialPage>{
                 ListView.builder(
                   itemCount: allPokemons.length,
                   itemBuilder: (context, index) =>
-                    PokeWidget(imag: 'https:raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${allPokemons[index].id}.png', name: allPokemons[index].name,),
+                      PokeCard(imag: 'https:raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${allPokemons[index].id}.png', name: allPokemons[index].name, isFavorite: isFavorite,),
                 ) :
 
-                ListView.builder(
-                  itemCount: _foundPokemons.length,
-                  itemBuilder: (context, index) =>
-                      PokeWidget(imag: 'https:raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${_foundPokemons[index].id}.png', name: _foundPokemons[index].name,),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                  child: GridView.builder(
+                    itemCount: _foundPokemons.length,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisSpacing: 2,
+                      mainAxisSpacing: 2,
+                      crossAxisCount: 3,
+                      //childAspectRatio: 2/3,
+                    ),
+                    itemBuilder: (context, index) => CardPokemon(imag: 'https:raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${_foundPokemons[index].id}.png', name: _foundPokemons[index].name, isFavorite: isFavorite,),
+
+                            ),
                 ),
 
           ),
@@ -124,6 +133,11 @@ class _InitialPageState extends State<InitialPage>{
   }
 }
 
+/*ListView.builder(
+itemCount: _foundPokemons.length,
+itemBuilder: (context, index) =>
+CardPokemon(imag: 'https:raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${_foundPokemons[index].id}.png', name: _foundPokemons[index].name, isFavorite: isFavorite,),
+),*/
 
 //https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon[index].id}.png
 //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${pokemon[index].id}.gif'
