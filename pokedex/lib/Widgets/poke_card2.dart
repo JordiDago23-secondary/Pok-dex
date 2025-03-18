@@ -19,6 +19,12 @@ class CardPokemon extends StatefulWidget{
 
 class _CardPokemonState extends State<CardPokemon>{
 
+  late bool _isFavorite;
+
+  void initState(){
+    super.initState();
+    _isFavorite = widget.isFavorite;
+  }
 
   Widget build(BuildContext){
     return Card(
@@ -59,8 +65,8 @@ class _CardPokemonState extends State<CardPokemon>{
                     ),
                   ),
                   IconButton(
-                    onPressed: () => setState((){widget.isFavorite = !widget.isFavorite;}),
-                    icon: widget.isFavorite ? Icon(Icons.favorite_border_outlined) : Icon(Icons.favorite),
+                    onPressed: () => setState(() { _isFavorite = !_isFavorite; }),
+                    icon: _isFavorite ? Icon(Icons.favorite_border_outlined) : Icon(Icons.favorite),
                   ),
                 ],
               ),
@@ -73,3 +79,6 @@ class _CardPokemonState extends State<CardPokemon>{
   }
 
 }
+
+
+//setState(() { _isFavorite = !_isFavorite; })
