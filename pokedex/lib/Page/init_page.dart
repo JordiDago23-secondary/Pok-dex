@@ -27,6 +27,7 @@ class _InitialPageState extends State<InitialPage>{
 
   bool isGridView = true;
   bool isDarck = true;
+  bool isListFavorites = true;
 
   void initState(){
     super.initState();
@@ -80,13 +81,21 @@ class _InitialPageState extends State<InitialPage>{
                   ),
                   Row(
                     children: [
+                      //IconButton para mostrar una lista de pokemons a los que se les a dado megusta guardar los pokemons con SharedPreferences
+                      IconButton(
+                          onPressed: () => setState(() { isListFavorites = !isListFavorites;}),
+                          icon: isListFavorites? Icon(Icons.favorite_border): Icon(Icons.favorite)
+                      ),
+                      //IconButton para que el usuario escoga si ver la lista de pokemons en modo GridView or tipo lista con un ListTile con un ListView
                       IconButton(
                           onPressed: () => setState(() { isGridView = !isGridView;}),
                           icon: Icon(Icons.grid_view_outlined)
                       ),
+                      //IconButton Para aplicar el modo oscuro y claro de la aplicacion
                       IconButton(
                           onPressed: () => setState(() { isDarck = !isDarck;}),
-                          icon: isDarck? Icon(Icons.sunny): Icon(Icons.mode_night_sharp)),
+                          icon: isDarck? Icon(Icons.sunny): Icon(Icons.mode_night_sharp)
+                      ),
                     ],
                   ),
                 ],
@@ -94,9 +103,13 @@ class _InitialPageState extends State<InitialPage>{
         ),
         bottom: PreferredSize(
             preferredSize: Size.fromHeight(90),
-
+                //Extension del AppBar para añadir un TextField con la logica de un buscador de Pokemons.
+                //"la logica de busqueda esta mal aplicada busca pokemons los contengan en sus nombres ciertas palabras no su nombre de inicio a fin"
                 child: Container(
                   color: Colors.grey[200],
+                  // Column para dentro introducir el TextField  y anadir una logica mas se trata de implementas
+                  // un listView para crear unalisa en direccion horizontal y buscar los pokemons por tipo de elemento: Normal, fuego, agua, planta, electrico, etc...
+                  // dicha lista estara devajo del TextField y se marcara como predionado dicho campo a la vez modificara los poquemos que se veran en la Lista dePokemos o el GridView
                   child: Column(
                     children: [
                       Padding(
@@ -127,6 +140,7 @@ class _InitialPageState extends State<InitialPage>{
         ),
       ),
 
+      //Body donde se mostraran la lista de pokemons con los filtrados de megusta el tipo de pokemon "aplicado en el AppBar"
       body: Column(
         //mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -163,11 +177,7 @@ class _InitialPageState extends State<InitialPage>{
   }
 }
 
-/*ListView.builder(
-itemCount: _foundPokemons.length,
-itemBuilder: (context, index) =>
-CardPokemon(imag: 'https:raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${_foundPokemons[index].id}.png', name: _foundPokemons[index].name, isFavorite: isFavorite,),
-),*/
+
 
 //https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon[index].id}.png
 //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${pokemon[index].id}.gif'
