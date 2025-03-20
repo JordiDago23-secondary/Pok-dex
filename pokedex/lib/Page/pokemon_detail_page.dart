@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:pokedex/Model/pokemon_model.dart'; // Tu modelo aquí
-import '../Controller/favorite_controller.dart';
-import '../Services/notification_service.dart';
+import 'package:pokedex/Model/pokemon_model.dart';
 
 class PokemonDetailPage extends StatefulWidget {
   final PokeModel pokemon;
   final bool isFavorite;
   final Function(int) onTapFavorite;
+  final bool isDarkMode; // 👈 NUEVO parámetro
 
   const PokemonDetailPage({
     super.key,
     required this.pokemon,
     required this.isFavorite,
     required this.onTapFavorite,
+    required this.isDarkMode, // 👈 nuevo requerido
   });
 
   @override
@@ -25,34 +25,47 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
   @override
   void initState() {
     super.initState();
-    _isFavorite = widget.isFavorite; // Inicializamos el valor
+    _isFavorite = widget.isFavorite;
   }
 
   void _toggleFavorite() {
     setState(() {
       _isFavorite = !_isFavorite;
     });
-
     widget.onTapFavorite(widget.pokemon.id);
-
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = widget.isDarkMode;
+
+    // 🎨 Paleta dinámica
+    final backgroundColor = isDarkMode ? Colors.grey[900] : Colors.grey[100];
+    final appBarColor = backgroundColor;
+    final primaryColor = isDarkMode ? Colors.orangeAccent : Colors.orange[300]!;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final subTextColor = isDarkMode ? Colors.grey[400]! : Colors.grey[600]!;
+    final cardBackground = isDarkMode ? Colors.grey[850]! : Colors.white;
+    final statBarBackground = isDarkMode ? Colors.grey[800]! : Colors.grey[300]!;
+
     return Scaffold(
-      backgroundColor: Colors.red[600],
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        title: Text(widget.pokemon.name.toUpperCase(), style: TextStyle(color: Colors.black,)),
-        backgroundColor: Colors.grey[200],
-        iconTheme: IconThemeData(color: Colors.black),
+        backgroundColor: appBarColor,
+        elevation: 0,
+        title: Text(
+          'Pokedex',
+          style: TextStyle(color: textColor),
+        ),
+        iconTheme: IconThemeData(color: textColor),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12.0),
             child: GestureDetector(
-              onTap: _toggleFavorite,//_toggleFavorite
+              onTap: _toggleFavorite,
               child: AnimatedSwitcher(
-                duration: Duration(milliseconds: 300),
-                transitionBuilder: (Widget child, Animation<double> animation) {
+                duration: const Duration(milliseconds: 300),
+                transitionBuilder: (child, animation) {
                   return ScaleTransition(scale: animation, child: child);
                 },
                 child: Icon(
@@ -66,45 +79,115 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
           ),
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Center(
-              child: Hero(
-                tag: 'pokemon-${widget.pokemon.id}',
-                child: Image.network(
-                  'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${widget.pokemon.id}.gif',
-                  height: 120,
-                  width: 120,
-                  fit: BoxFit.contain,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Image.asset(
-                      'asset/images/no_imagen.png', // Ruta de tu asset
-                      height: 100,
-                      fit: BoxFit.cover,
-                    );
-                  },
+      body: Column(
+        children: [
+          // Imagen y encabezado
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            decoration: BoxDecoration(
+              color: primaryColor.withOpacity(0.8),
+              borderRadius: const BorderRadius.vertical(
+                bottom: Radius.circular(30),
+              ),
+            ),
+            child: Column(
+              children: [
+                Hero(
+                  tag: 'pokemon-${widget.pokemon.id}',
+                  child: Image.network(
+                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
+                    //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${widget.pokemon.id}.gif',
+                    height: 150,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'asset/images/no_imagen.png',
+                        height: 120,
+                        fit: BoxFit.contain,
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  widget.pokemon.name.toLowerCase(),
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                _buildTypes(widget.pokemon.types),
+              ],
+            ),
+          ),
+
+          // Datos del Pokémon
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildWeightHeight('Weight', '${widget.pokemon.weight / 10} KG', textColor, subTextColor),
+                _buildWeightHeight('Height', '${widget.pokemon.height / 10} M', textColor, subTextColor),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Base Stats Title
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Align(
+              alignment: Alignment.center,
+              child: Text(
+                'Base Stats',
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-            SizedBox(height: 16.0),
-            Text(
-              '#${widget.pokemon.id} ${widget.pokemon.name.toUpperCase()}',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+
+          const SizedBox(height: 10),
+
+          // Stats
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: _buildStats(widget.pokemon.stats, textColor, statBarBackground),
             ),
-            SizedBox(height: 16.0),
-            _buildTypes(widget.pokemon.types),
-            SizedBox(height: 16.0),
-            _buildInfoRow('Altura:', '${widget.pokemon.height / 10} m'),
-            _buildInfoRow('Peso:', '${widget.pokemon.weight / 10} kg'),
-            SizedBox(height: 16.0),
-            _buildAbilities(widget.pokemon.abilities),
-            SizedBox(height: 16.0),
-            Expanded(child: _buildStats(widget.pokemon.stats)),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
+
+  Widget _buildWeightHeight(String label, String value, Color textColor, Color subTextColor) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            color: textColor,
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: subTextColor,
+            fontSize: 14,
+          ),
+        ),
+      ],
     );
   }
 
@@ -116,74 +199,126 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
   }
 
   Widget _typeChip(String type) {
+    Color color = _getColorByType(type);
+
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4.0),
-      padding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white24,
-        borderRadius: BorderRadius.circular(20.0),
+        color: color,
+        borderRadius: BorderRadius.circular(8),
       ),
       child: Text(
         type.toUpperCase(),
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
 
-  Widget _buildInfoRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(color: Colors.white, fontSize: 18)),
-        Text(value, style: TextStyle(color: Colors.white, fontSize: 18)),
-      ],
-    );
-  }
-
-  Widget _buildAbilities(List<String> abilities) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text('Habilidades:', style: TextStyle(color: Colors.white, fontSize: 18)),
-        SizedBox(height: 8.0),
-        Column(
-          children: abilities
-              .map((ability) => Row(
-            children: [
-              Icon(Icons.check, color: Colors.white, size: 18),
-              SizedBox(width: 8.0),
-              Text(
-                ability,
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ],
-          ))
-              .toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStats(Map<String, int> stats) {
+  Widget _buildStats(Map<String, int> stats, Color textColor, Color barBackgroundColor) {
     return ListView(
       children: stats.entries.map((entry) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              '${entry.key}: ${entry.value}',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            SizedBox(height: 4.0),
-            LinearProgressIndicator(
-              value: entry.value / 100,
-              backgroundColor: Colors.white30,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.greenAccent),
-            ),
-            SizedBox(height: 12.0),
-          ],
+        Color progressColor = _getStatColor(entry.key);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Nombre y valor
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    entry.key,
+                    style: TextStyle(color: textColor, fontSize: 16),
+                  ),
+                  Text(
+                    entry.value.toString(),
+                    style: TextStyle(color: textColor, fontSize: 16),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              // Barra de progreso
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value: (entry.value / 300).clamp(0.0, 1.0),
+                  minHeight: 10,
+                  backgroundColor: barBackgroundColor,
+                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                ),
+              ),
+            ],
+          ),
         );
       }).toList(),
     );
+  }
+
+  Color _getColorByType(String type) {
+    switch (type.toLowerCase()) {
+      case 'fire':
+        return Colors.redAccent;
+      case 'water':
+        return Colors.blueAccent;
+      case 'grass':
+        return Colors.greenAccent;
+      case 'electric':
+        return Colors.yellow[700]!;
+      case 'psychic':
+        return Colors.purpleAccent;
+      case 'normal':
+        return Colors.grey;
+      case 'ice':
+        return Colors.cyanAccent;
+      case 'fighting':
+        return Colors.orangeAccent;
+      case 'poison':
+        return Colors.deepPurpleAccent;
+      case 'ground':
+        return Colors.brown;
+      case 'flying':
+        return Colors.indigoAccent;
+      case 'bug':
+        return Colors.lightGreenAccent;
+      case 'rock':
+        return Colors.brown;
+      case 'ghost':
+        return Colors.deepPurple;
+      case 'dragon':
+        return Colors.indigo;
+      case 'dark':
+        return Colors.black54;
+      case 'steel':
+        return Colors.blueGrey;
+      case 'fairy':
+        return Colors.pinkAccent;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  Color _getStatColor(String stat) {
+    switch (stat.toLowerCase()) {
+      case 'hp':
+        return Colors.redAccent;
+      case 'attack':
+        return Colors.orange;
+      case 'defense':
+        return Colors.blue;
+      case 'special-attack':
+        return Colors.deepOrange;
+      case 'special-defense':
+        return Colors.green;
+      case 'speed':
+        return Colors.lightBlueAccent;
+      default:
+        return Colors.grey;
+    }
   }
 }

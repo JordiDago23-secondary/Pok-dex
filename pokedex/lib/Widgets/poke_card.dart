@@ -67,7 +67,7 @@ class ListTilePokemon extends StatelessWidget {
     final darkerColor = hsl.withLightness((hsl.lightness - 0.2).clamp(0.0, 1.0)).toColor();
 
     // Color del texto (gris claro)
-    final textColor = Colors.grey;
+    final textColor = Colors.grey[200];
 
     return GestureDetector(
       onTap: onTap,
@@ -79,8 +79,8 @@ class ListTilePokemon extends StatelessWidget {
           boxShadow: [
             BoxShadow(
               color: baseColor.withOpacity(0.5),
-              offset: const Offset(0, 4),
-              blurRadius: 10,
+              offset: const Offset(0, 2),
+              blurRadius: 6,
             ),
           ],
           border: Border.all(

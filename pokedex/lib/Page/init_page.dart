@@ -417,13 +417,10 @@ class _InitialPageState extends State<InitialPage> {
                               isFavorite: _favoritePokemons
                                   .contains(poke.id),
                               onTapFavorite: (id) {
-                                final selectedPoke =
-                                _foundPokemons.firstWhere(
-                                      (p) => p.id == id,
-                                  orElse: () => poke,
-                                );
+                                final selectedPoke = _foundPokemons.firstWhere((p) => p.id == id, orElse: () => poke,);
                                 _toggleFavorite(selectedPoke);
                               },
+                              isDarkMode: widget.isDarkMode,
                             ),
                           ),
                         );
@@ -454,6 +451,7 @@ class _InitialPageState extends State<InitialPage> {
                               );
                               _toggleFavorite(selectedPoke);
                             },
+                            isDarkMode: widget.isDarkMode,
                           ),
                         ),
                       );
