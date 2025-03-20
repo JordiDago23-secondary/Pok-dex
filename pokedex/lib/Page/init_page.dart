@@ -8,6 +8,10 @@ import 'package:pokedex/Widgets/poke_card.dart';
 import '../Controller/favorite_controller.dart';
 import '../Services/notification_service.dart';
 import '../Widgets/poke_card2.dart';
+import 'package:pokedex/ModeDark_ModeLight/theme_dark.dart';
+import 'package:pokedex/ModeDark_ModeLight/theme_light.dart';
+
+
 
 class InitialPage extends StatefulWidget {
 
@@ -213,14 +217,16 @@ class _InitialPageState extends State<InitialPage> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
     List<PokeModel> pokemonsToShow = _getPokemonsToShow();
 
     return Scaffold(
-      //backgroundColor: Colors.red[600],
-      backgroundColor: Colors.red[600],
+      backgroundColor: colorScheme.primary,
       appBar: AppBar(
         elevation: 4,
-        backgroundColor: Colors.white,
+        backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Fondo del AppBar
         title: Padding(
           padding: const EdgeInsets.symmetric(vertical: 10),
           child: Row(
@@ -228,8 +234,8 @@ class _InitialPageState extends State<InitialPage> {
             children: [
               Text(
                 'Pokédex',
-                style: TextStyle(
-                  color: Colors.black,
+                style: textTheme.titleLarge?.copyWith(
+                  color: widget.isDarkMode ? Colors.white : Colors.black, // Color del texto
                   fontWeight: FontWeight.bold,
                   fontSize: 30,
                   fontFamily: 'Pokemon',
@@ -237,7 +243,6 @@ class _InitialPageState extends State<InitialPage> {
               ),
               Row(
                 children: [
-                  //Ordenar por numero de Pokedex
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -250,9 +255,9 @@ class _InitialPageState extends State<InitialPage> {
                       isOrderBy0_9
                           ? Icons.format_list_numbered
                           : Icons.swap_vert,
+                      color: widget.isDarkMode ? Colors.white : Colors.black, // Color del icono
                     ),
                   ),
-                  // Boton para ordenar alfabeticamente
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -265,9 +270,9 @@ class _InitialPageState extends State<InitialPage> {
                       isOrderByA_Z
                           ? Icons.filter_list_outlined
                           : Icons.filter_list_off_rounded,
+                      color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
-                  // Botón para mostrar solo favoritos
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -278,10 +283,9 @@ class _InitialPageState extends State<InitialPage> {
                       showOnlyFavorites
                           ? Icons.favorite
                           : Icons.favorite_border,
-                      color: Colors.redAccent,
+                      color: widget.isDarkMode ? Colors.white : Colors.black, // Esto lo puedes dejar así porque siempre es rojo
                     ),
                   ),
-                  // Botón para cambiar vista
                   IconButton(
                     onPressed: () {
                       setState(() {
@@ -292,13 +296,16 @@ class _InitialPageState extends State<InitialPage> {
                       isGridView
                           ? Icons.grid_view_outlined
                           : Icons.view_list,
+                      color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
-                  // Botón para cambiar modo claro/oscuro (para el futuro)
                   IconButton(
                     onPressed: widget.onToggleTheme,
                     icon: Icon(
-                      widget.isDarkMode ? Icons.dark_mode_sharp : Icons.light_mode,
+                      widget.isDarkMode
+                          ? Icons.dark_mode_sharp
+                          : Icons.light_mode,
+                      color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                 ],
@@ -310,19 +317,25 @@ class _InitialPageState extends State<InitialPage> {
           preferredSize: Size.fromHeight(130),
           child: Column(
             children: [
-              Container(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                  child: TextField(
-                    cursorColor: Colors.black,
-                    onChanged: run_Filter, // Pasa directamente la función
-                    decoration: InputDecoration(
-                      labelText: 'Buscar Pokémons',
-                      hintText: 'Escribe un nombre...',
-                      suffixIcon: Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                child: TextField(
+                  cursorColor: colorScheme.secondary,
+                  onChanged: run_Filter,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.secondary,
+                  ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: colorScheme.surface,
+                    labelText: 'Buscar Pokémons',
+                    labelStyle: TextStyle(color: colorScheme.tertiary),
+                    hintText: 'Escribe un nombre...',
+                    hintStyle: TextStyle(color: colorScheme.tertiary),
+                    suffixIcon: Icon(Icons.search, color: colorScheme.secondary),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide(color: colorScheme.primary),
                     ),
                   ),
                 ),
@@ -343,12 +356,14 @@ class _InitialPageState extends State<InitialPage> {
                         label: Text(
                           type,
                           style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.black,
+                            color: isSelected
+                                ? colorScheme.onPrimary
+                                : colorScheme.secondary,
                           ),
                         ),
                         selected: isSelected,
-                        selectedColor: Colors.redAccent, // Color de seleccionado
-                        backgroundColor: Colors.grey[300], // Color de no seleccionado
+                        selectedColor: colorScheme.primary,
+                        backgroundColor: colorScheme.surfaceVariant ?? Colors.grey[300],
                         onSelected: (_) {
                           filterByType(type);
                         },
@@ -369,7 +384,9 @@ class _InitialPageState extends State<InitialPage> {
                   ? Center(
                 child: Text(
                   'No hay Pokémon para mostrar',
-                  style: TextStyle(color: Colors.white),
+                  style: textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.secondary,
+                  ),
                 ),
               )
                   : isGridView
@@ -387,7 +404,8 @@ class _InitialPageState extends State<InitialPage> {
                     final poke = pokemonsToShow[index];
                     return CardPokemon(
                       pokemon: poke,
-                      isFavorite: _favoritePokemons.contains(poke.id),
+                      isFavorite:
+                      _favoritePokemons.contains(poke.id),
                       onTapFavorite: () => _toggleFavorite(poke),
                       onTap: () {
                         Navigator.push(

@@ -42,7 +42,7 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
     return Scaffold(
       backgroundColor: Colors.red[600],
       appBar: AppBar(
-        title: Text(widget.pokemon.name.toUpperCase(), style: TextStyle(color: Colors.black)),
+        title: Text(widget.pokemon.name.toUpperCase(), style: TextStyle(color: Colors.black,)),
         backgroundColor: Colors.grey[200],
         iconTheme: IconThemeData(color: Colors.black),
         actions: [
