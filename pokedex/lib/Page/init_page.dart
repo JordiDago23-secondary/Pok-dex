@@ -66,7 +66,7 @@ class _InitialPageState extends State<InitialPage> {
     _loadFavorites();
   }
 
-  // ✅ Muestra notificación y SnackBar al usuario
+  // Muestra notificación y SnackBar al usuario
   void _showFavoriteNotification(PokeModel pokemon, bool isNowFavorite) {
     NotificationService.showNotification(
       title: isNowFavorite ? '¡Favorito añadido!' : 'Favorito eliminado',

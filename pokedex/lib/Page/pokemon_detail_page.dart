@@ -5,14 +5,14 @@ class PokemonDetailPage extends StatefulWidget {
   final PokeModel pokemon;
   final bool isFavorite;
   final Function(int) onTapFavorite;
-  final bool isDarkMode; // 👈 NUEVO parámetro
+  final bool isDarkMode;
 
   const PokemonDetailPage({
     super.key,
     required this.pokemon,
     required this.isFavorite,
     required this.onTapFavorite,
-    required this.isDarkMode, // 👈 nuevo requerido
+    required this.isDarkMode,
   });
 
   @override
@@ -39,7 +39,7 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
   Widget build(BuildContext context) {
     final isDarkMode = widget.isDarkMode;
 
-    // 🎨 Paleta dinámica
+    //  Paleta dinámica
     final backgroundColor = isDarkMode ? Colors.grey[900] : Colors.grey[100];
     final appBarColor = backgroundColor;
     final primaryColor = isDarkMode ? Colors.orangeAccent : Colors.orange[300]!;
