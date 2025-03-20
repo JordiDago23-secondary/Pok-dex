@@ -78,6 +78,13 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                   height: 120,
                   width: 120,
                   fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Image.asset(
+                      'asset/images/no_imagen.png', // Ruta de tu asset
+                      height: 100,
+                      fit: BoxFit.cover,
+                    );
+                  },
                 ),
               ),
             ),

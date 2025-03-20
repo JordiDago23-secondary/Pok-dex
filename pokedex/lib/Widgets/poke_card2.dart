@@ -79,6 +79,13 @@ class CardPokemon extends StatelessWidget {
                 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
                 height: 100,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Image.asset(
+                      'asset/images/no_imagen.png', // Ruta de tu asset
+                      height: 100,
+                      fit: BoxFit.cover,
+                  );
+                },
               ),
             ),
             Text(

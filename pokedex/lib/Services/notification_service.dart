@@ -122,7 +122,7 @@ class NotificationService {
     );
 
     await flutterLocalNotificationsPlugin.show(
-      DateTime.now().millisecondsSinceEpoch ~/ 1000, // ID único para que siempre aparezca
+      DateTime.now().millisecondsSinceEpoch ~/ 3000, // ID único para que siempre aparezca
       title,
       body,
       notificationDetails,
