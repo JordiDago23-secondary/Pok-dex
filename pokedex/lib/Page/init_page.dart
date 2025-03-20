@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:pokedex/Controller/pokemon_api.dart';
 import 'package:pokedex/Model/pokemon_model.dart';
 import 'package:pokedex/Page/pokemon_detail_page.dart';
-import 'package:pokedex/Widgets/poke_card.dart';
+import 'package:pokedex/Widgets/poke_card_list_tile.dart';
 
 import '../Controller/favorite_controller.dart';
 import '../Services/notification_service.dart';
-import '../Widgets/poke_card2.dart';
+import '../Widgets/poke_card_grid_view.dart';
 import 'package:pokedex/ModeDark_ModeLight/theme_dark.dart';
 import 'package:pokedex/ModeDark_ModeLight/theme_light.dart';
 
@@ -51,13 +51,13 @@ class _InitialPageState extends State<InitialPage> {
     updatePokemon();
   }
 
-  // ✅ Carga favoritos desde el controller
+  //Carga favoritos desde el controller
   void _loadFavorites() async {
     _favoritePokemons = await FavoriteController.getFavoritePokemons();
     setState(() {});
   }
 
-  // ✅ Alterna el favorito y muestra la notificación
+  //Alterna el favorito y muestra la notificación
   void _toggleFavorite(PokeModel pokemon) async {
     await FavoriteController.toggleFavorite(pokemon.id);
     final isNowFavorite = await FavoriteController.isFavorite(pokemon.id);
@@ -85,7 +85,7 @@ class _InitialPageState extends State<InitialPage> {
     );*/
   }
 
-  // ✅ Actualiza toda la lista de pokémons
+  // Actualiza toda la lista de pokémons
   void updatePokemon() async {
     List<PokeModel> Pokemons =
     await PokeApi().getAllPokemons(offset: numOffSet, nomPok: numPokn);
@@ -95,7 +95,7 @@ class _InitialPageState extends State<InitialPage> {
     });
   }
 
-  // ✅ Filtro de búsqueda por texto (mejorado con startsWith)
+  // Filtro de búsqueda por texto (mejorado con startsWith)
   void run_Filter(String keyword) {
     List<PokeModel> results = [];
 
@@ -204,7 +204,7 @@ class _InitialPageState extends State<InitialPage> {
 
   String selectedType = 'Todos'; // Tipo seleccionado
 
-  // ✅ Devuelve los pokémons que se deben mostrar en el listado
+  //Devuelve los pokémons que se deben mostrar en el listado
   List<PokeModel> _getPokemonsToShow() {
     if (showOnlyFavorites) {
       return _foundPokemons

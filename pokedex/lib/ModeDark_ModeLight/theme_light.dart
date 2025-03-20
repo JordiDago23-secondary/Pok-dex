@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 
 class LightColors {
-  static const background = Color(0xFFFFFBFA);  // Ejemplo, cámbialo si quieres
+  static const background = Color(0xFFFFFBFA);
   static const primary = Color(0xFFFFFFFF);
   static const secondary = Color(0xFF000000);
   static const highlight = Color(0xFFD32F2F);

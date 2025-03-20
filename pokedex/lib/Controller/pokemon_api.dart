@@ -20,10 +20,10 @@ class PokeApi {
     Map<String, dynamic> jsonData = json.decode(response.body);
     List<dynamic> results = jsonData['results'];
 
-    /// Paso 1: Mapeamos los modelos básicos
+
     List<PokeModel> basicPokemons = results.map((item) => PokeModel.fromJson(item)).toList();
 
-    /// Paso 2: Creamos las peticiones para los detalles
+
     List<Future<PokeModel>> detailFutures = basicPokemons.map((poke) async {
       try {
         final detailResponse = await http.get(Uri.parse(poke.url));
@@ -41,7 +41,7 @@ class PokeApi {
       }
     }).toList();
 
-    /// Paso 3: Esperamos a que terminen todas las peticiones
+
     List<PokeModel> detailedPokemons = await Future.wait(detailFutures);
 
     return detailedPokemons;

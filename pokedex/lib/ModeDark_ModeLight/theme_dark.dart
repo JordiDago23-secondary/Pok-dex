@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 
 
 class DarkColors {
-  static const background = Color(0xFF1E1E1E);     // Fondo general
-  static const primary = Color(0xFF424242);        // Superficies (AppBar, etc.)
-  static const secondary = Color(0xFFFFFFFF);      // Texto principal
-  static const highlight = Color(0xFFB71C1C);      // Color de énfasis (Botones, etc.)
+  static const background = Color(0xFF1E1E1E);                  // Fondo general
+  static const primary = Color(0xFF424242);                     // Superficies (AppBar, etc.)
+  static const secondary = Color(0xFFFFFFFF);                   // Texto principal
+  static const highlight = Color(0xFFB71C1C);                   // Color de énfasis (Botones, etc.)
   static const tertiary = Color.fromRGBO(255, 255, 255, 0.7);  // Texto secundario
 }
 

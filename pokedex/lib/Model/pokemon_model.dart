@@ -1,4 +1,5 @@
 class PokeModel {
+
   final int id;
   final String name;
   final String url;
@@ -6,7 +7,7 @@ class PokeModel {
   final int height;
   final int weight;
   final Map<String, int> stats;
-  final List<String> abilities; // ✅ Nueva propiedad
+  final List<String> abilities;
 
   PokeModel({
     required this.id,
@@ -16,7 +17,7 @@ class PokeModel {
     required this.height,
     required this.weight,
     required this.stats,
-    required this.abilities, // ✅ La incluimos aquí
+    required this.abilities,
   });
 
   /// Carga básica desde el listado de pokemons
@@ -32,7 +33,7 @@ class PokeModel {
       height: 0,
       weight: 0,
       stats: {},
-      abilities: [], // ✅ Lista vacía en el modelo básico
+      abilities: [],
     );
   }
 
@@ -47,7 +48,7 @@ class PokeModel {
       stats[stat['stat']['name']] = stat['base_stat'];
     });
 
-    /// ✅ Obtener las habilidades del Pokémon
+    /// Obtener las habilidades del Pokémon
     List<String> abilities = (json['abilities'] as List)
         .map((ability) => ability['ability']['name'] as String)
         .toList();
@@ -60,7 +61,7 @@ class PokeModel {
       height: json['height'],
       weight: json['weight'],
       stats: stats,
-      abilities: abilities, // ✅ Las asignamos aquí
+      abilities: abilities,
     );
   }
 
