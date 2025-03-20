@@ -60,68 +60,114 @@ class CardPokemon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String type = pokemon.types.isNotEmpty ? pokemon.types[0] : 'normal';
-    Color bgColor = _getColorByType(type);
+    Color baseColor = _getColorByType(type);
+
+    final hsl = HSLColor.fromColor(baseColor);
+    final darkerBorder = hsl.withLightness((hsl.lightness - 0.2).clamp(0.0, 1.0)).toColor();
+
+    // Texto legible (gris claro)
+    final textColor = Colors.grey[200];
 
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        color: bgColor,
+        color: baseColor.withOpacity(0.8),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(width: 1.5, color: darkerBorder),
         ),
         elevation: 5,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Hero(
-              tag: 'pokemon-${pokemon.id}',
-              child: Image.network(
-                'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
-                height: 100,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Image.asset(
-                      'asset/images/no_imagen.png', // Ruta de tu asset
-                      height: 100,
-                      fit: BoxFit.cover,
-                  );
-                },
-              ),
-            ),
-            Text(
-              pokemon.name.toUpperCase(),
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: Colors.white,
-              ),
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: pokemon.types.map((type) => Container(
-                margin: EdgeInsets.symmetric(horizontal: 4),
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white24,
-                  borderRadius: BorderRadius.circular(12),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Botón de favorito alineado arriba a la derecha
+              Align(
+                alignment: Alignment.topRight,
+                child: IconButton(
+                  icon: Icon(
+                    isFavorite ? Icons.favorite : Icons.favorite_border,
+                    color: textColor,
+                    size: 22,
+                  ),
+                  onPressed: onTapFavorite,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(), // Reduce tamaño del botón
                 ),
-                child: Text(
-                  type,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
+              ),
+
+              // Imagen del Pokémon (Hero animation)
+              Expanded(
+                flex: 6,
+                child: Hero(
+                  tag: 'pokemon-${pokemon.id}',
+                  child: Image.network(
+                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'asset/images/no_imagen.png',
+                        fit: BoxFit.contain,
+                      );
+                    },
                   ),
                 ),
-              )).toList(),
-            ),
-            IconButton(
-              icon: Icon(
-                isFavorite ? Icons.favorite : Icons.favorite_border,
-                color: Colors.white,
               ),
-              onPressed: onTapFavorite,
-            ),
-          ],
+
+              const SizedBox(height: 8),
+
+              // Nombre del Pokémon
+              Expanded(
+                flex: 2,
+                child: Center(
+                  child: Text(
+                    pokemon.name.toUpperCase(),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: textColor,
+                    ),
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              // Tipos de Pokémon
+              Expanded(
+                flex: 2,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: pokemon.types.map((type) {
+                    final typeColor = _getColorByType(type);
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: typeColor.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white, width: 1),
+                      ),
+                      child: Text(
+                        type.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -396,9 +396,10 @@ class _InitialPageState extends State<InitialPage> {
                   itemCount: pokemonsToShow.length,
                   gridDelegate:
                   SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 2,
+                    crossAxisSpacing: 3,
                     mainAxisSpacing: 2,
-                    crossAxisCount: 3,
+                    crossAxisCount: 2,
+                    childAspectRatio: 3/4,
                   ),
                   itemBuilder: (context, index) {
                     final poke = pokemonsToShow[index];
@@ -435,7 +436,7 @@ class _InitialPageState extends State<InitialPage> {
                 itemCount: pokemonsToShow.length,
                 itemBuilder: (context, index) {
                   final poke = pokemonsToShow[index];
-                  return CardPokemon(
+                  return ListTilePokemon(
                     pokemon: poke,
                     isFavorite: _favoritePokemons.contains(poke.id),
                     onTapFavorite: () => _toggleFavorite(poke),
@@ -445,11 +446,9 @@ class _InitialPageState extends State<InitialPage> {
                         MaterialPageRoute(
                           builder: (_) => PokemonDetailPage(
                             pokemon: poke,
-                            isFavorite:
-                            _favoritePokemons.contains(poke.id),
+                            isFavorite: _favoritePokemons.contains(poke.id),
                             onTapFavorite: (id) {
-                              final selectedPoke =
-                              _foundPokemons.firstWhere(
+                              final selectedPoke = _foundPokemons.firstWhere(
                                     (p) => p.id == id,
                                 orElse: () => poke,
                               );
