@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pokedex/Model/pokemon_model.dart';
+import 'package:just_audio/just_audio.dart';
 
 class PokemonDetailPage extends StatefulWidget {
   final PokeModel pokemon;
@@ -21,11 +22,35 @@ class PokemonDetailPage extends StatefulWidget {
 
 class _PokemonDetailPageState extends State<PokemonDetailPage> {
   late bool _isFavorite;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
     _isFavorite = widget.isFavorite;
+
+    // Escuchamos el estado del reproductor para saber cuándo deja de sonar
+    _audioPlayer.playerStateStream.listen((playerState) {
+      final isPlaying = playerState.playing;
+      final isCompleted = playerState.processingState == ProcessingState.completed;
+
+      setState(() {
+        _isPlaying = isPlaying;
+      });
+
+      if (isCompleted) {
+        setState(() {
+          _isPlaying = false;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose(); // Cierra el reproductor al salir
+    super.dispose();
   }
 
   void _toggleFavorite() {
@@ -33,6 +58,18 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
       _isFavorite = !_isFavorite;
     });
     widget.onTapFavorite(widget.pokemon.id);
+  }
+
+  void _playCry() async {
+    try {
+      await _audioPlayer.stop(); // Detiene cualquier reproducción anterior
+      await _audioPlayer.setUrl(widget.pokemon.soundUrl);
+      await _audioPlayer.play();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al reproducir el sonido: $e')),
+      );
+    }
   }
 
   @override
@@ -54,7 +91,7 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
         backgroundColor: appBarColor,
         elevation: 0,
         title: Text(
-          'Pokedex',
+          'Pokédex',
           style: TextStyle(color: textColor),
         ),
         iconTheme: IconThemeData(color: textColor),
@@ -79,89 +116,117 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
           ),
         ],
       ),
-      body: Column(
+      body: Stack(
         children: [
-          // Imagen y encabezado
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-              color: primaryColor.withOpacity(0.8),
-              borderRadius: const BorderRadius.vertical(
-                bottom: Radius.circular(30),
-              ),
-            ),
-            child: Column(
-              children: [
-                Hero(
-                  tag: 'pokemon-${widget.pokemon.id}',
-                  child: Image.network(
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
-                    //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/showdown/${widget.pokemon.id}.gif',
-                    height: 150,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'asset/images/no_imagen.png',
-                        height: 120,
-                        fit: BoxFit.contain,
-                      );
-                    },
+          Column(
+            children: [
+              // Imagen y encabezado
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.8),
+                  borderRadius: const BorderRadius.vertical(
+                    bottom: Radius.circular(30),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Text(
-                  widget.pokemon.name.toLowerCase(),
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: textColor,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                _buildTypes(widget.pokemon.types),
-              ],
-            ),
-          ),
-
-          // Datos del Pokémon
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildWeightHeight('Weight', '${widget.pokemon.weight / 10} KG', textColor, subTextColor),
-                _buildWeightHeight('Height', '${widget.pokemon.height / 10} M', textColor, subTextColor),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 10),
-
-          // Base Stats Title
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Align(
-              alignment: Alignment.center,
-              child: Text(
-                'Base Stats',
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                child: Stack(
+                  children: [
+                    Column(
+                      children: [
+                        Hero(
+                          tag: 'pokemon-${widget.pokemon.id}',
+                          child: Image.network(
+                            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
+                            height: 150,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'asset/images/no_imagen.png',
+                                height: 120,
+                                fit: BoxFit.contain,
+                              );
+                            },
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          widget.pokemon.name.toLowerCase(),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildTypes(widget.pokemon.types),
+                      ],
+                    ),
+                    // Icono con animación en la esquina superior derecha
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: GestureDetector(
+                        onTap: _playCry,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isPlaying ? Icons.graphic_eq : Icons.volume_up,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ),
 
-          const SizedBox(height: 10),
+              // Datos del Pokémon
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildWeightHeight('Weight', '${widget.pokemon.weight / 10} KG', textColor, subTextColor),
+                    _buildWeightHeight('Height', '${widget.pokemon.height / 10} M', textColor, subTextColor),
+                  ],
+                ),
+              ),
 
-          // Stats
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: _buildStats(widget.pokemon.stats, textColor, statBarBackground),
-            ),
+              const SizedBox(height: 10),
+
+              // Base Stats Title
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Align(
+                  alignment: Alignment.center,
+                  child: Text(
+                    'Base Stats',
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Stats
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: _buildStats(widget.pokemon.stats, textColor, statBarBackground),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -228,7 +293,6 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Nombre y valor
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -243,7 +307,6 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                 ],
               ),
               const SizedBox(height: 6),
-              // Barra de progreso
               ClipRRect(
                 borderRadius: BorderRadius.circular(10),
                 child: LinearProgressIndicator(

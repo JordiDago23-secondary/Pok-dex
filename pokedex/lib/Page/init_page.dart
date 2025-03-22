@@ -1,5 +1,7 @@
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pokedex/Controller/pokemon_api.dart';
 import 'package:pokedex/Model/pokemon_model.dart';
 import 'package:pokedex/Page/pokemon_detail_page.dart';
@@ -44,6 +46,9 @@ class _InitialPageState extends State<InitialPage> {
   bool isOrderByA_Z = false;
   bool isOrderBy0_9 = true;
 
+  //estado de carga pokemons
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -87,13 +92,55 @@ class _InitialPageState extends State<InitialPage> {
 
   // Actualiza toda la lista de pokémons
   void updatePokemon() async {
+    setState(() {
+      isLoading = true;
+    });
+
     List<PokeModel> Pokemons =
     await PokeApi().getAllPokemons(offset: numOffSet, nomPok: numPokn);
     setState(() {
       allPokemons = Pokemons;
       _foundPokemons = Pokemons;
+      isLoading = false;
     });
+
   }
+
+  //Mostrar un pokemon aleatorio en Page pokemon_datail_page.dart
+  void navigateToRandomPokemon() {
+    if (allPokemons.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Todavía no se han cargado los Pokémon.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+
+    final random = Random();
+    final randomIndex = random.nextInt(allPokemons.length);
+    final randomPokemon = allPokemons[randomIndex];
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PokemonDetailPage(
+          pokemon: randomPokemon,
+          isFavorite: _favoritePokemons.contains(randomPokemon.id),
+          onTapFavorite: (id) {
+            final selectedPoke = _foundPokemons.firstWhere(
+                  (p) => p.id == id,
+              orElse: () => randomPokemon,
+            );
+            _toggleFavorite(selectedPoke);
+          },
+          isDarkMode: widget.isDarkMode,
+        ),
+      ),
+    );
+  }
+
 
   // Filtro de búsqueda por texto (mejorado con startsWith)
   void run_Filter(String keyword) {
@@ -232,30 +279,24 @@ class _InitialPageState extends State<InitialPage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Pokédex',
-                style: textTheme.titleLarge?.copyWith(
-                  color: widget.isDarkMode ? Colors.white : Colors.black, // Color del texto
-                  fontWeight: FontWeight.bold,
-                  fontSize: 30,
-                  fontFamily: 'Pokemon',
+              Expanded(
+                child: Text(
+                  'Pokédex',
+                  style: textTheme.titleLarge?.copyWith(
+                    color: widget.isDarkMode ? Colors.white : Colors.black, // Color del texto
+                    fontWeight: FontWeight.bold,
+                    fontSize: 30,
+                    fontFamily: 'Pokemon',
+                  ),
                 ),
               ),
               Row(
                 children: [
                   IconButton(
-                    onPressed: () {
-                      setState(() {
-                        isOrderBy0_9 = !isOrderBy0_9;
-                        isOrderByA_Z = false;
-                      });
-                      orderPokemonsByNumber();
-                    },
+                    onPressed: navigateToRandomPokemon,
                     icon: Icon(
-                      isOrderBy0_9
-                          ? Icons.format_list_numbered
-                          : Icons.swap_vert,
-                      color: widget.isDarkMode ? Colors.white : Colors.black, // Color del icono
+                      Icons.casino,
+                      color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
                   ),
                   IconButton(
@@ -319,25 +360,46 @@ class _InitialPageState extends State<InitialPage> {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                child: TextField(
-                  cursorColor: colorScheme.secondary,
-                  onChanged: run_Filter,
-                  style: textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.secondary,
-                  ),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: colorScheme.surface,
-                    labelText: 'Buscar Pokémons',
-                    labelStyle: TextStyle(color: colorScheme.tertiary),
-                    hintText: 'Escribe un nombre...',
-                    hintStyle: TextStyle(color: colorScheme.tertiary),
-                    suffixIcon: Icon(Icons.search, color: colorScheme.secondary),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: colorScheme.primary),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        onChanged: (query) {
+                          run_Filter(query);
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Buscar Pokémon',
+                          prefixIcon: Icon(Icons.search),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    SizedBox(width: 8), // Espacio entre el campo y el botón
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          isOrderBy0_9 = !isOrderBy0_9;
+                          isOrderByA_Z = false;
+                          orderPokemonsByNumber();
+                        });
+                      },
+                      style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            side:BorderSide(width: 1, color: colorScheme.secondary),
+                        ),
+                        backgroundColor: colorScheme.surfaceVariant,
+                      ),
+                      icon: Icon(
+                        isOrderBy0_9 ? Icons.format_list_numbered : Icons.swap_vert,
+                        color: widget.isDarkMode ? Colors.white : Colors.black,
+                        //size: 31,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               Container(
@@ -377,7 +439,24 @@ class _InitialPageState extends State<InitialPage> {
         ),
       ),
       body: SafeArea(
-        child: Column(
+
+        child: isLoading?
+         Center(child:
+             Lottie.asset('asset/animations/AnimationPokeball.json',
+               height: 150,
+               width: 150,
+               repeat: true,
+             )
+
+           //animacion de GIF en caso de quere un cambio de animacion.
+           /*Image.asset('asset/animations/pokeball_load_compres.gif',
+             height: 150,
+             width: 150,
+           ),*/
+
+         )
+            :
+         Column(
           children: [
             Expanded(
               child: pokemonsToShow.isEmpty

@@ -126,6 +126,7 @@ class ListTilePokemon extends StatelessWidget {
                       pokemon.name.toUpperCase(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
+                        //fontFamily: 'Pokemon',
                         fontSize: 16,
                         color: textColor,
                       ),

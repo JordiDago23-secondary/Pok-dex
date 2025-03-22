@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:pokedex/Model/pokemon_model.dart';
 
 class CardPokemon extends StatelessWidget {
@@ -79,7 +80,7 @@ class CardPokemon extends StatelessWidget {
         elevation: 5,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
         child: Padding(
-          padding: const EdgeInsets.all(12),
+          padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0,),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -106,11 +107,22 @@ class CardPokemon extends StatelessWidget {
                   child: Image.network(
                     'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
                     fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'asset/images/no_imagen.png',
-                        fit: BoxFit.contain,
+
+                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
+                      if(loadingProgress == null){
+                        return child;
+                      }else{
+                      return Center(
+                        child: Lottie.asset('asset/animations/AnimationPokeball.json',
+                          height: 150,
+                          width: 150,
+                          repeat: true,
+                        ),
                       );
+                      }
+                    },
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset('asset/images/no_imagen.png', fit: BoxFit.contain,);
                     },
                   ),
                 ),

@@ -1,5 +1,4 @@
 class PokeModel {
-
   final int id;
   final String name;
   final String url;
@@ -8,6 +7,7 @@ class PokeModel {
   final int weight;
   final Map<String, int> stats;
   final List<String> abilities;
+  final String soundUrl;
 
   PokeModel({
     required this.id,
@@ -18,12 +18,15 @@ class PokeModel {
     required this.weight,
     required this.stats,
     required this.abilities,
+    required this.soundUrl,
   });
 
-  /// Carga básica desde el listado de pokemons
   factory PokeModel.fromJson(Map<String, dynamic> json) {
     final uri = Uri.parse(json['url']);
     final id = int.parse(uri.pathSegments[uri.pathSegments.length - 2]);
+
+    final soundUrl = 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/$id.ogg';
+    //'https://pokemoncries.com/cries-old/$id.mp3'
 
     return PokeModel(
       id: id,
@@ -34,10 +37,10 @@ class PokeModel {
       weight: 0,
       stats: {},
       abilities: [],
+      soundUrl: soundUrl,
     );
   }
 
-  /// Carga los detalles del Pokémon
   factory PokeModel.fromDetailJson(Map<String, dynamic> json, PokeModel basicModel) {
     List<String> types = (json['types'] as List)
         .map((type) => type['type']['name'] as String)
@@ -48,7 +51,6 @@ class PokeModel {
       stats[stat['stat']['name']] = stat['base_stat'];
     });
 
-    /// Obtener las habilidades del Pokémon
     List<String> abilities = (json['abilities'] as List)
         .map((ability) => ability['ability']['name'] as String)
         .toList();
@@ -62,10 +64,10 @@ class PokeModel {
       weight: json['weight'],
       stats: stats,
       abilities: abilities,
+      soundUrl: basicModel.soundUrl,
     );
   }
 
-  /// Método opcional para capitalizar el nombre
   static String _capitalize(String name) {
     if (name.isEmpty) return name;
     return name[0].toUpperCase() + name.substring(1);

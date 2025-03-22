@@ -32,6 +32,11 @@ class MyApp extends StatefulWidget{
 class _MyAppState extends State<MyApp>{
   bool isDarkMode = false;
 
+  void toggleTheme(){
+    setState(() {
+      isDarkMode = !isDarkMode;
+    });
+  }
 
   // This widget is the root of your application.
   @override
@@ -48,11 +53,4 @@ class _MyAppState extends State<MyApp>{
       ),
     );
   }
-
-  void toggleTheme(){
-    setState(() {
-      isDarkMode = !isDarkMode;
-    });
-  }
-
  }
