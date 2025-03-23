@@ -68,6 +68,7 @@ class CardPokemon extends StatelessWidget {
 
     // Texto legible (gris claro)
     final textColor = Colors.grey[200];
+    final glowColor = baseColor.withOpacity(0.5);
 
     return GestureDetector(
       onTap: onTap,
@@ -87,43 +88,83 @@ class CardPokemon extends StatelessWidget {
               // Botón de favorito alineado arriba a la derecha
               Align(
                 alignment: Alignment.topRight,
-                child: IconButton(
-                  icon: Icon(
-                    isFavorite ? Icons.favorite : Icons.favorite_border,
-                    color: textColor,
-                    size: 22,
-                  ),
-                  onPressed: onTapFavorite,
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(), // Reduce tamaño del botón
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: darkerBorder,
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 3.0, vertical: 1),
+                        child: Text('#${pokemon.id.toString().padLeft(3, '0')}',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        isFavorite ? Icons.favorite : Icons.favorite_border,
+                        color: Colors.white, //textColor
+                        size: 22,
+                      ),
+                      onPressed: onTapFavorite,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(), // Reduce tamaño del botón
+                    ),
+                  ],
                 ),
               ),
 
               // Imagen del Pokémon (Hero animation)
               Expanded(
                 flex: 6,
-                child: Hero(
-                  tag: 'pokemon-${pokemon.id}',
-                  child: Image.network(
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
-                    fit: BoxFit.contain,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: baseColor,
+                    boxShadow: [
+                      BoxShadow(
+                        color: glowColor,
+                        blurRadius: 20,
+                        spreadRadius: 3,
+                      ),
+                    ],
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: ClipOval(
+                    child: Hero(
+                      tag: 'pokemon-${pokemon.id}',
+                      child: Image.network(
+                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
+                        fit: BoxFit.contain,
 
-                    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
-                      if(loadingProgress == null){
-                        return child;
-                      }else{
-                      return Center(
-                        child: Lottie.asset('asset/animations/AnimationPokeball.json',
-                          height: 150,
-                          width: 150,
-                          repeat: true,
-                        ),
-                      );
-                      }
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset('asset/images/no_imagen.png', fit: BoxFit.contain,);
-                    },
+                        loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
+                          if(loadingProgress == null){
+                            return child;
+                          }else{
+                            return Center(
+                              child: Lottie.asset('asset/animations/AnimationPokeball.json',
+                                height: 150,
+                                width: 150,
+                                repeat: true,
+                              ),
+                            );
+                          }
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset('asset/images/no_imagen.png', fit: BoxFit.contain,);
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -139,7 +180,7 @@ class CardPokemon extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: textColor,
+                      color: Colors.white,
                     ),
                     textAlign: TextAlign.center,
                     overflow: TextOverflow.ellipsis,

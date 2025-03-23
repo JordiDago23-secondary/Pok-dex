@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
@@ -14,6 +15,11 @@ import 'package:pokedex/ModeDark_ModeLight/theme_dark.dart';
 import 'package:pokedex/ModeDark_ModeLight/theme_light.dart';
 
 
+enum OrderType {
+  none,
+  alphabetical,
+  numerical,
+}
 
 class InitialPage extends StatefulWidget {
 
@@ -30,15 +36,19 @@ class InitialPage extends StatefulWidget {
   State<InitialPage> createState() => _InitialPageState();
 }
 
+
+
 class _InitialPageState extends State<InitialPage> {
   final PokeApi pokeApi = PokeApi();
+
+
 
   List<PokeModel> allPokemons = [];
   List<PokeModel> _foundPokemons = [];
   List<int> _favoritePokemons = [];
 
   int numOffSet = 0;
-  int numPokn = 1500;
+  int numPokn = 10000;
 
   bool isGridView = true;
   bool showOnlyFavorites = false;
@@ -49,11 +59,41 @@ class _InitialPageState extends State<InitialPage> {
   //estado de carga pokemons
   bool isLoading = false;
 
+  //buscar por tipos de Pokémons
+  String selectedType = 'Todos';
+  String searchKeyword = '';
+
+  //enum que lleva elestado de los botones de ordenar
+  // en orden alfabetico o numerico
+  OrderType _orderType = OrderType.none;
+  bool _isAscending = true;
+
+  //variable en referencia a la conexión en internet
+  bool _hasInternet = true;
+
+
   @override
   void initState() {
     super.initState();
     _loadFavorites();
     updatePokemon();
+    Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+      if (results.contains(ConnectivityResult.none)) {
+        Card(
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+              side: BorderSide(width: 1.5, color: Colors.grey),
+          ),
+          color: Colors.black38,
+          child: Text('🛜📡📶 No hay conexion a internet intentelo en otro momento.',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+            ),
+          ),
+        );
+      }
+    });
   }
 
   //Carga favoritos desde el controller
@@ -62,14 +102,41 @@ class _InitialPageState extends State<InitialPage> {
     setState(() {});
   }
 
+  void sortPokemons() {
+    setState(() {
+      if (_orderType == OrderType.alphabetical) {
+        _foundPokemons.sort((a, b) => _isAscending
+            ? a.name.compareTo(b.name)
+            : b.name.compareTo(a.name));
+      } else if (_orderType == OrderType.numerical) {
+        _foundPokemons.sort((a, b) => _isAscending
+            ? a.id.compareTo(b.id)
+            : b.id.compareTo(a.id));
+      }
+      // Si es OrderType.none, no hace nada (se pueden definir comportamientos de ser necesarios)
+    });
+  }
+
+
   //Alterna el favorito y muestra la notificación
   void _toggleFavorite(PokeModel pokemon) async {
+    final wasFavorite = _favoritePokemons.contains(pokemon.id);
     await FavoriteController.toggleFavorite(pokemon.id);
-    final isNowFavorite = await FavoriteController.isFavorite(pokemon.id);
 
-    _showFavoriteNotification(pokemon, isNowFavorite);
-    _loadFavorites();
+    setState(() {
+      if (wasFavorite) {
+        _favoritePokemons.remove(pokemon.id);  // Eliminado directamente
+      } else {
+        _favoritePokemons.add(pokemon.id);     // Añadido directamente
+      }
+      if (showOnlyFavorites) {
+        applyFilters();
+      }
+    });
+
+    _showFavoriteNotification(pokemon, !wasFavorite);
   }
+
 
   // Muestra notificación y SnackBar al usuario
   void _showFavoriteNotification(PokeModel pokemon, bool isNowFavorite) {
@@ -138,7 +205,41 @@ class _InitialPageState extends State<InitialPage> {
           isDarkMode: widget.isDarkMode,
         ),
       ),
-    );
+    ).then((_) {
+      // Cuando vuelves de la página de detalles
+      applyFilters();
+    });
+  }
+
+  void applyFilters() {
+    List<PokeModel> filteredPokemons = allPokemons;
+
+    if (selectedType != 'Todos') {
+      final englishType = typeTranslations[selectedType] ?? selectedType.toLowerCase();
+
+      filteredPokemons = filteredPokemons.where((poke) {
+        return poke.types.any((t) => t.toLowerCase() == englishType);
+      }).toList();
+    }
+
+    if (searchKeyword.isNotEmpty) {
+      filteredPokemons = filteredPokemons.where((poke) {
+        return poke.name.toLowerCase().startsWith(searchKeyword.toLowerCase());
+      }).toList();
+    }
+
+    if (showOnlyFavorites) {
+      filteredPokemons = filteredPokemons.where((poke) {
+        return _favoritePokemons.contains(poke.id);
+      }).toList();
+    }
+
+    setState(() {
+      _foundPokemons = filteredPokemons;
+    });
+
+    // Siempre ordena después de aplicar los filtros
+    sortPokemons();
   }
 
 
@@ -146,61 +247,22 @@ class _InitialPageState extends State<InitialPage> {
   void run_Filter(String keyword) {
     List<PokeModel> results = [];
 
-    if (keyword.isEmpty) {
-      results = allPokemons;
-    } else {
-      results = allPokemons
-          .where((poke) => poke.name
-          .toLowerCase()
-          .startsWith(keyword.toLowerCase())) // Aquí el cambio clave
-          .toList();
-    }
-
     setState(() {
-      _foundPokemons = results;
+      searchKeyword = keyword;
     });
-  }
+    applyFilters();
 
-  void orderPokemonsAlphabetically() {
-    setState(() {
-      if (isOrderByA_Z) {
-        _foundPokemons.sort((a, b) => a.name.compareTo(b.name));
-      } else {
-        _foundPokemons.sort((a, b) => b.name.compareTo(a.name));
-      }
-    });
-  }
-
-  void orderPokemonsByNumber() {
-    setState(() {
-      if (isOrderBy0_9) {
-        _foundPokemons.sort((a, b) => a.id.compareTo(b.id));
-      } else {
-        _foundPokemons.sort((a, b) => b.id.compareTo(a.id));
-      }
-    });
   }
 
   void filterByType(String type) {
     List<PokeModel> results = [];
 
-    if (type == 'Todos') {
-      results = allPokemons;
-    } else {
-      final englishType = typeTranslations[type] ?? type.toLowerCase();
-
-      results = allPokemons.where((poke) {
-        return poke.types.any((t) => t.toLowerCase() == englishType);
-      }).toList();
-    }
-
     setState(() {
       selectedType = type;
-      _foundPokemons = results;
-      if (isOrderByA_Z) {
-        orderPokemonsAlphabetically(); // Si ya está activado el orden
-      }
+      searchKeyword = '';
     });
+    applyFilters();
+
   }
 
 
@@ -249,8 +311,6 @@ class _InitialPageState extends State<InitialPage> {
     'Lucha',
   ];
 
-  String selectedType = 'Todos'; // Tipo seleccionado
-
   //Devuelve los pokémons que se deben mostrar en el listado
   List<PokeModel> _getPokemonsToShow() {
     if (showOnlyFavorites) {
@@ -270,7 +330,7 @@ class _InitialPageState extends State<InitialPage> {
     List<PokeModel> pokemonsToShow = _getPokemonsToShow();
 
     return Scaffold(
-      backgroundColor: colorScheme.primary,
+      backgroundColor: colorScheme.primary, //colorScheme.primary // black87 // black26
       appBar: AppBar(
         elevation: 4,
         backgroundColor: widget.isDarkMode ? Colors.black : Colors.white, // Fondo del AppBar
@@ -302,14 +362,19 @@ class _InitialPageState extends State<InitialPage> {
                   IconButton(
                     onPressed: () {
                       setState(() {
-                        isOrderByA_Z = !isOrderByA_Z;
-                        isOrderBy0_9 = false;
+                        if (_orderType == OrderType.alphabetical) {
+                          // Cambia el sentido del orden
+                          _isAscending = !_isAscending;
+                        } else {
+                          _orderType = OrderType.alphabetical;
+                          _isAscending = true; // O el valor que prefieras por defecto
+                        }
                       });
-                      orderPokemonsAlphabetically();
+                      sortPokemons();
                     },
                     icon: Icon(
-                      isOrderByA_Z
-                          ? Icons.filter_list_outlined
+                      _orderType == OrderType.alphabetical
+                          ? (_isAscending ? Icons.sort_by_alpha : Icons.sort_by_alpha_outlined)
                           : Icons.filter_list_off_rounded,
                       color: widget.isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -319,6 +384,7 @@ class _InitialPageState extends State<InitialPage> {
                       setState(() {
                         showOnlyFavorites = !showOnlyFavorites;
                       });
+                      applyFilters();
                     },
                     icon: Icon(
                       showOnlyFavorites
@@ -381,22 +447,32 @@ class _InitialPageState extends State<InitialPage> {
                     IconButton(
                       onPressed: () {
                         setState(() {
-                          isOrderBy0_9 = !isOrderBy0_9;
-                          isOrderByA_Z = false;
-                          orderPokemonsByNumber();
+                          if (_orderType == OrderType.numerical) {
+                            // Cambia el sentido del orden
+                            _isAscending = !_isAscending;
+                          } else {
+                            _orderType = OrderType.numerical;
+                            _isAscending = true; // O el valor que prefieras por defecto
+                          }
                         });
+                        sortPokemons();
                       },
                       style: IconButton.styleFrom(
+                        backgroundColor: widget.isDarkMode ? Colors.black : Colors.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
-                            side:BorderSide(width: 1, color: colorScheme.secondary),
+                            side: BorderSide(
+                                width: 1,
+                                color: widget.isDarkMode ? Colors.white : Colors.black,
+                            ),
                         ),
-                        backgroundColor: colorScheme.surfaceVariant,
                       ),
                       icon: Icon(
-                        isOrderBy0_9 ? Icons.format_list_numbered : Icons.swap_vert,
+                        _orderType == OrderType.numerical
+                            ? (_isAscending ? Icons.format_list_numbered : Icons.swap_vert)
+                            : Icons.filter_list_off_rounded,
                         color: widget.isDarkMode ? Colors.white : Colors.black,
-                        //size: 31,
+                        size: 25,
                       ),
                     ),
                   ],
@@ -447,14 +523,14 @@ class _InitialPageState extends State<InitialPage> {
                width: 150,
                repeat: true,
              )
-
+            )
            //animacion de GIF en caso de quere un cambio de animacion.
-           /*Image.asset('asset/animations/pokeball_load_compres.gif',
-             height: 150,
-             width: 150,
-           ),*/
-
-         )
+           /*Center(
+             child: Image.asset('asset/animations/pikachu_loading2.gif',
+               height: 150,
+               width: 150,
+             ),
+           )*/
             :
          Column(
           children: [
@@ -475,8 +551,8 @@ class _InitialPageState extends State<InitialPage> {
                   itemCount: pokemonsToShow.length,
                   gridDelegate:
                   SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisSpacing: 3,
-                    mainAxisSpacing: 2,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
                     crossAxisCount: 2,
                     childAspectRatio: 3/4,
                   ),

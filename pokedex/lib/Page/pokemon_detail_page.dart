@@ -24,6 +24,7 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
   late bool _isFavorite;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlaying = false;
+  bool isShine = false;
 
   @override
   void initState() {
@@ -75,6 +76,8 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = widget.isDarkMode;
+    //final typeColor = _getColorByType(widget.pokemon.types.first);
+    final typeColors = widget.pokemon.types.map((type) => _getColorByType(type)).toList();
 
     //  Paleta dinámica
     final backgroundColor = isDarkMode ? Colors.grey[900] : Colors.grey[100];
@@ -125,7 +128,19 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.8),
+                  gradient: typeColors.length > 1
+                      ? LinearGradient(
+                    colors: [
+                      typeColors[0].withOpacity(0.8),
+                      typeColors[1].withOpacity(0.8),
+                    ],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                      : null,
+                  color: typeColors.length == 1
+                      ? typeColors[0].withOpacity(0.8)
+                      : null,
                   borderRadius: const BorderRadius.vertical(
                     bottom: Radius.circular(30),
                   ),
@@ -134,19 +149,28 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                   children: [
                     Column(
                       children: [
-                        Hero(
+                        GestureDetector(
+                          onTap: (){
+                            setState(() {
+                              isShine = !isShine;
+                            });
+                          },
+                          child: Hero(
                           tag: 'pokemon-${widget.pokemon.id}',
-                          child: Image.network(
+
+                            child:Image.network( isShine?
+                            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${widget.pokemon.id}.png' :
                             'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
-                            height: 150,
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'asset/images/no_imagen.png',
-                                height: 120,
-                                fit: BoxFit.contain,
-                              );
-                            },
+                              height: 150,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Image.asset(
+                                  'asset/images/no_imagen.png',
+                                  height: 120,
+                                  fit: BoxFit.contain,
+                                );
+                              },
+                            ),
                           ),
                         ),
                         const SizedBox(height: 10),
@@ -193,8 +217,8 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    _buildWeightHeight('Weight', '${widget.pokemon.weight / 10} KG', textColor, subTextColor),
-                    _buildWeightHeight('Height', '${widget.pokemon.height / 10} M', textColor, subTextColor),
+                    _buildWeightHeight(label: 'Weight', value: '${widget.pokemon.weight / 10} Kg', icon: Icons.fitness_center_outlined, textColor: textColor, subTextColor: subTextColor),
+                    _buildWeightHeight(label: 'Height', value: '${widget.pokemon.height / 10} M',  icon: Icons.straighten, textColor: textColor, subTextColor: subTextColor),
                   ],
                 ),
               ),
@@ -233,20 +257,36 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
     );
   }
 
-  Widget _buildWeightHeight(String label, String value, Color textColor, Color subTextColor) {
+  Widget _buildWeightHeight({
+    required String label,
+    required String value,
+    required IconData icon,
+    required Color textColor,
+    required Color subTextColor
+  }) {
     return Column(
       children: [
-        Text(
-          value,
-          style: TextStyle(
-            color: textColor,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        Row(
+          children: [
+            Icon(
+              icon,
+              color: textColor,
+              size: 20,
+            ),
+            SizedBox(width: 5,),
+            Text(
+              label,
+              style: TextStyle(
+                color: textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
-          label,
+          value,
           style: TextStyle(
             color: subTextColor,
             fontSize: 14,

@@ -23,7 +23,7 @@ class ListTilePokemon extends StatelessWidget {
       case 'grass':
         return Colors.greenAccent;
       case 'electric':
-        return Colors.yellowAccent;
+        return Colors.amberAccent;
       case 'psychic':
         return Colors.purpleAccent;
       case 'normal':
@@ -62,59 +62,92 @@ class ListTilePokemon extends StatelessWidget {
     String type = pokemon.types.isNotEmpty ? pokemon.types[0] : 'normal';
     Color baseColor = _getColorByType(type);
 
-    // Color más oscuro para el borde
+    // Neon color tweaks
+    final neonColor = baseColor.withOpacity(0.8);
     final hsl = HSLColor.fromColor(baseColor);
     final darkerColor = hsl.withLightness((hsl.lightness - 0.2).clamp(0.0, 1.0)).toColor();
 
-    // Color del texto (gris claro)
-    final textColor = Colors.grey[200];
+    // For the glow effect
+    final glowColor = baseColor.withOpacity(0.6);
+
+    // Neon style text color
+    final textColor = Colors.white.withOpacity(0.9);
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: baseColor.withOpacity(0.8), // Color sólido sin gradiente
-          borderRadius: BorderRadius.circular(16),
+          gradient: LinearGradient(
+            colors: [
+              neonColor.withOpacity(0.4),
+              darkerColor.withOpacity(0.8),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: baseColor.withOpacity(0.5),
-              offset: const Offset(0, 2),
-              blurRadius: 6,
+              color: glowColor,
+              blurRadius: 15,
+              spreadRadius: 2,
+              offset: const Offset(0, 0),
+            ),
+            BoxShadow(
+              color: darkerColor.withOpacity(0.5),
+              blurRadius: 5,
+              spreadRadius: 1,
+              offset: const Offset(2, 4),
             ),
           ],
           border: Border.all(
-            color: darkerColor,
-            width: 1.5,
+            color: baseColor,
+            width: 2,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
               // Imagen del Pokémon
-              Hero(
-                tag: 'pokemon-${pokemon.id}',
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.network(
-                    'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
-                    width: 60,
-                    height: 60,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'asset/images/no_imagen.png',
-                        width: 60,
-                        height: 60,
+
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: glowColor,
+                        blurRadius: 12,
+                        spreadRadius: 2,
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Hero(
+                      tag: 'pokemon-${pokemon.id}',
+                      child: Image.network(
+                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
+                        width: 64,
+                        height: 64,
                         fit: BoxFit.contain,
-                      );
-                    },
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'asset/images/no_imagen.png',
+                            width: 64,
+                            height: 64,
+                            fit: BoxFit.contain,
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
-              ),
 
-              const SizedBox(width: 12),
+
+              const SizedBox(width: 16),
 
               // Información del Pokémon
               Expanded(
@@ -126,26 +159,48 @@ class ListTilePokemon extends StatelessWidget {
                       pokemon.name.toUpperCase(),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        //fontFamily: 'Pokemon',
-                        fontSize: 16,
+                        fontSize: 18,
                         color: textColor,
+                        shadows: [
+                          Shadow(
+                            color: glowColor,
+                            blurRadius: 10,
+                          ),
+                        ],
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
 
                     // Tipos de Pokémon
                     Wrap(
-                      spacing: 6,
+                      spacing: 8,
                       children: pokemon.types.map((type) {
                         final typeColor = _getColorByType(type);
+                        final hsl = HSLColor.fromColor(typeColor);
+                        final darkerColor = hsl.withLightness((hsl.lightness - 0.2).clamp(0.0, 1.0)).toColor();
+
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: typeColor.withOpacity(0.8),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: Colors.white, width: 1),
+                            gradient: LinearGradient(
+                              colors: [
+                                typeColor.withOpacity(0.8),
+                                darkerColor.withOpacity(0.8),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: typeColor.withOpacity(0.6),
+                                blurRadius: 8,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                            border: Border.all(color: Colors.white.withOpacity(0.8), width: 1),
                           ),
                           child: Text(
                             type.toUpperCase(),
@@ -153,6 +208,7 @@ class ListTilePokemon extends StatelessWidget {
                               color: Colors.white,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         );
@@ -167,8 +223,8 @@ class ListTilePokemon extends StatelessWidget {
                 onPressed: onTapFavorite,
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.white,
-                  size: 28,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 30,
                 ),
               ),
             ],
