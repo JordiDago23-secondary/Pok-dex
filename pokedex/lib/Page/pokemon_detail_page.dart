@@ -157,10 +157,14 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                           },
                           child: Hero(
                           tag: 'pokemon-${widget.pokemon.id}',
+                            //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${widget.pokemon.id}.png'
+                            //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
 
+                            //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${widget.pokemon.id}.png',
+                            // 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
                             child:Image.network( isShine?
-                            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/shiny/${widget.pokemon.id}.png' :
-                            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
+                            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/shiny/${widget.pokemon.id}.png' :
+                            'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${widget.pokemon.id}.png',
                               height: 150,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) {

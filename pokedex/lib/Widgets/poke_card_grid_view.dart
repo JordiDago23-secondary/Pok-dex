@@ -143,8 +143,10 @@ class CardPokemon extends StatelessWidget {
                   child: ClipOval(
                     child: Hero(
                       tag: 'pokemon-${pokemon.id}',
+                      //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png'
+                      //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
                       child: Image.network(
-                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${pokemon.id}.png',
+                        'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}.png',
                         fit: BoxFit.contain,
 
                         loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress){
