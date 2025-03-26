@@ -157,6 +157,7 @@ class _PokemonDetailPageState extends State<PokemonDetailPage> {
                           },
                           child: Hero(
                           tag: 'pokemon-${widget.pokemon.id}',
+                            //Links de imagenes
                             //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${widget.pokemon.id}.png'
                             //'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${widget.pokemon.id}.png',
 
