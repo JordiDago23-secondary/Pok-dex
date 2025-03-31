@@ -3,8 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:pokedex/Model/pokemon_model.dart';
 import 'package:http/http.dart' as http;
 
+import '../Page/init_page.dart';
+
 class PokeApi {
   final apiUrl = 'https://pokeapi.co';
+
 
   Future<List<PokeModel>> getAllPokemons({int? nomPok, int? offset}) async {
     int numPokemon = nomPok ?? 20;
@@ -15,7 +18,9 @@ class PokeApi {
     );
 
     if (response.statusCode != 200) {
+
       throw Exception('Failed to load Pokedex');
+      
     }
 
     Map<String, dynamic> jsonData = json.decode(response.body);

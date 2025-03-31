@@ -549,7 +549,7 @@ class _InitialPageState extends State<InitialPage> {
                     child: NotificationListener<ScrollNotification>(
                       onNotification: (scrollNotification) {
                         if (scrollNotification is OverscrollNotification &&
-                            scrollNotification.overscroll < -30) {
+                            scrollNotification.overscroll < -100) {
                           // Usuario ha llegado al tope superior y sigue intentando desplazarse arriba
                           updatePokemon(); // Recarga los datos
                         }
